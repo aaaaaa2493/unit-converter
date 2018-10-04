@@ -2,63 +2,68 @@ package unitConverter
 
 import java.util.*
 
-fun getCorrectName(value: Double, measure: String): String {
-    return when(measure) {
-        "meters", "meter", "m" ->
-            if (value == 1.0) "meter" else "meters"
-        "kilometers", "kilometer", "km" ->
-            if (value == 1.0) "kilometer" else "kilometers"
-        "centimeters", "centimeter", "cm" ->
-            if (value == 1.0) "centimeter" else "centimeters"
-        "millimeters", "millimeter", "mm" ->
-            if (value == 1.0) "millimeter" else "millimeters"
-        "miles", "mile", "mi" ->
-            if (value == 1.0) "mile" else "miles"
-        "yards", "yard", "yd" ->
-            if (value == 1.0) "yard" else "yards"
-        "feet", "foot", "ft" ->
-            if (value == 1.0) "foot" else "feet"
-        "inches", "inch", "in" ->
-            if (value == 1.0) "inch" else "inches"
-        "kilograms", "kilogram", "kg" ->
-            if (value == 1.0) "kilogram" else "kilograms"
-        "grams", "gram", "g" ->
-            if (value == 1.0) "gram" else "grams"
-        "milligrams", "milligram", "mg" ->
-            if (value == 1.0) "milligram" else "milligrams"
-        "pounds", "pound", "lb" ->
-            if (value == 1.0) "pound" else "pounds"
-        "ounces", "ounce", "oz" ->
-            if (value == 1.0) "ounce" else "ounces"
-        else -> "???"
+enum class MeasureGroup {
+    Length, Weight, Temperature
+}
+
+enum class Measure {
+    Meter, Kilometer, Centimeter, Millimeter, Mile, Yard, Foot, Inch,
+    Gram, Kilogram, Milligram, Pound, Ounce;
+
+    fun getGroup() = when (this) {
+        Meter, Kilometer, Centimeter, Millimeter, Mile, Yard, Foot, Inch -> MeasureGroup.Length
+        Gram, Kilogram, Milligram, Pound, Ounce -> MeasureGroup.Weight
+    }
+
+    fun getCorrectName(value: Double) = when(this) {
+        Meter -> if (value == 1.0) "meter" else "meters"
+        Kilometer -> if (value == 1.0) "kilometer" else "kilometers"
+        Centimeter -> if (value == 1.0) "centimeter" else "centimeters"
+        Millimeter -> if (value == 1.0) "millimeter" else "millimeters"
+        Mile -> if (value == 1.0) "mile" else "miles"
+        Yard -> if (value == 1.0) "yard" else "yards"
+        Foot -> if (value == 1.0) "foot" else "feet"
+        Inch -> if (value == 1.0) "inch" else "inches"
+        Gram -> if (value == 1.0) "gram" else "grams"
+        Kilogram -> if (value == 1.0) "kilogram" else "kilograms"
+        Milligram -> if (value == 1.0) "milligram" else "milligrams"
+        Pound -> if (value == 1.0) "pound" else "pounds"
+        Ounce -> if (value == 1.0) "ounce" else "ounces"
+    }
+
+    fun getCoefficient() = when(this) {
+        Meter -> 1.0
+        Kilometer -> 1000.0
+        Centimeter -> 0.01
+        Millimeter -> 0.001
+        Mile -> 1609.35
+        Yard -> 0.9144
+        Foot -> 0.3048
+        Inch -> 0.0254
+        Gram -> 1.0
+        Kilogram -> 1000.0
+        Milligram -> 0.001
+        Pound -> 453.592
+        Ounce -> 28.3495
     }
 }
 
-fun getCoefficient(measure: String): Double {
+fun getMeasure(measure: String): Measure {
     return when(measure) {
-        "meters", "meter", "m" -> 1.0
-        "kilometers", "kilometer", "km" -> 1000.0
-        "centimeters", "centimeter", "cm" -> 0.01
-        "millimeters", "millimeter", "mm" -> 0.001
-        "miles", "mile", "mi" -> 1609.35
-        "yards", "yard", "yd" -> 0.9144
-        "feet", "foot", "ft" -> 0.3048
-        "inches", "inch", "in" -> 0.0254
-        "kilograms", "kilogram", "kg" -> 1000.0
-        "grams", "gram", "g" -> 1.0
-        "milligrams", "milligram", "mg" -> 0.001
-        "pounds", "pound", "lb" -> 453.592
-        "ounces", "ounce", "oz" -> 28.3495
-        else -> 0.0
-    }
-}
-
-fun getMeasureId(measure: String): Int {
-    val singular = getCorrectName(1.0, measure)
-    return when(singular) {
-        "meter", "kilometer", "centimeter", "millimeter", "mile", "yard", "foot", "inch" -> 1
-        "kilogram", "gram", "milligram", "pound", "ounce" -> 2
-        else -> -1
+        "meters", "meter", "m" -> Measure.Meter
+        "kilometers", "kilometer", "km" ->Measure.Kilometer
+        "centimeters", "centimeter", "cm" -> Measure.Centimeter
+        "millimeters", "millimeter", "mm" -> Measure.Millimeter
+        "miles", "mile", "mi" -> Measure.Mile
+        "yards", "yard", "yd" -> Measure.Yard
+        "feet", "foot", "ft" -> Measure.Foot
+        "inches", "inch", "in" -> Measure.Inch
+        "grams", "gram", "g" -> Measure.Gram
+        "kilograms", "kilogram", "kg" -> Measure.Kilogram
+        "milligrams", "milligram", "mg" -> Measure.Milligram
+        "pounds", "pound", "lb" -> Measure.Pound
+        "ounces", "ounce", "oz" -> Measure.Ounce
+        else -> Measure.Meter
     }
 }
 
@@ -76,23 +81,24 @@ fun main(args: Array<String>) {
         }
 
         val value = strValue.toDouble()
-        val measureFrom = scanner.next().toLowerCase()
+        val measureFrom = getMeasure(scanner.next().toLowerCase())
 
         scanner.next()
-        val measureTo = scanner.next().toLowerCase()
+        val measureTo = getMeasure(scanner.next().toLowerCase())
 
-        if (getMeasureId(measureFrom) != getMeasureId(measureTo)) {
-            println("Conversion from ${getCorrectName(2.0, measureFrom)} " +
-                    "to ${getCorrectName(2.0, measureTo)} is impossible")
+        if (measureTo.getGroup() != measureFrom.getGroup()) {
+            println("Conversion from ${measureFrom.getCorrectName(2.0)} " +
+                    "to ${measureTo.getCorrectName(2.0)} is impossible")
             continue
         }
 
-        val coefficientFrom = getCoefficient(measureFrom)
-        val coefficientTo = getCoefficient(measureTo)
+        val coefficientFrom = measureFrom.getCoefficient()
+        val coefficientTo = measureTo.getCoefficient()
 
         val result = value * coefficientFrom / coefficientTo
 
-        println("$value ${getCorrectName(value, measureFrom)} is $result ${getCorrectName(result, measureTo)}")
+        println("$value ${measureFrom.getCorrectName(value)} is $result ${measureTo.getCorrectName(result)}")
 
     }
+
 }
