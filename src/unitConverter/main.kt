@@ -3,16 +3,19 @@ package unitConverter
 import java.util.*
 
 enum class MeasureGroup {
-    Length, Weight, Temperature
+    Length, Weight, Temperature, Unknown
 }
 
 enum class Measure {
     Meter, Kilometer, Centimeter, Millimeter, Mile, Yard, Foot, Inch,
-    Gram, Kilogram, Milligram, Pound, Ounce;
+    Gram, Kilogram, Milligram, Pound, Ounce,
+    Kelvin, Celsius, Fahrenheit, Unknown;
 
     fun getGroup() = when (this) {
         Meter, Kilometer, Centimeter, Millimeter, Mile, Yard, Foot, Inch -> MeasureGroup.Length
         Gram, Kilogram, Milligram, Pound, Ounce -> MeasureGroup.Weight
+        Kelvin, Celsius, Fahrenheit -> MeasureGroup.Temperature
+        Unknown -> MeasureGroup.Unknown
     }
 
     fun getCorrectName(value: Double) = when(this) {
@@ -29,6 +32,10 @@ enum class Measure {
         Milligram -> if (value == 1.0) "milligram" else "milligrams"
         Pound -> if (value == 1.0) "pound" else "pounds"
         Ounce -> if (value == 1.0) "ounce" else "ounces"
+        Kelvin -> if (value == 1.0) "Kelvin" else "Kelvins"
+        Celsius -> if (value == 1.0) "degree Celsius" else "degrees Celsius"
+        Fahrenheit -> if (value == 1.0) "degree Fahrenheit" else "degrees Fahrenheit"
+        Unknown -> "???"
     }
 
     fun getCoefficient() = when(this) {
@@ -45,11 +52,18 @@ enum class Measure {
         Milligram -> 0.001
         Pound -> 453.592
         Ounce -> 28.3495
+        else -> 0.0
     }
 }
 
-fun getMeasure(measure: String): Measure {
-    return when(measure) {
+fun getMeasure(scanner: Scanner): Measure {
+
+    var measure = scanner.next()
+    if (measure == "degree" || measure == "degrees") {
+        measure += " " + scanner.next()
+    }
+
+    return when(measure.toLowerCase()) {
         "meters", "meter", "m" -> Measure.Meter
         "kilometers", "kilometer", "km" ->Measure.Kilometer
         "centimeters", "centimeter", "cm" -> Measure.Centimeter
@@ -63,7 +77,23 @@ fun getMeasure(measure: String): Measure {
         "milligrams", "milligram", "mg" -> Measure.Milligram
         "pounds", "pound", "lb" -> Measure.Pound
         "ounces", "ounce", "oz" -> Measure.Ounce
-        else -> Measure.Meter
+        "kelvins", "kelvin", "k" -> Measure.Kelvin
+        "degrees celsius", "degree celsius", "celsius", "dc", "c" -> Measure.Celsius
+        "degrees fahrenheit", "degree fahrenheit", "fahrenheit", "df", "f" -> Measure.Fahrenheit
+        else -> Measure.Unknown
+    }
+}
+
+fun calculate(value: Double, measureFrom: Measure, measureTo: Measure): Double {
+    return if (measureFrom == measureTo) value
+    else when(Pair(measureFrom, measureTo)) {
+        Pair(Measure.Fahrenheit, Measure.Celsius) -> (value - 32) * 5 / 9
+        Pair(Measure.Celsius, Measure.Fahrenheit) -> value * 9 / 5 + 32
+        Pair(Measure.Celsius, Measure.Kelvin) -> value - 273.15
+        Pair(Measure.Kelvin, Measure.Celsius) -> value + 273.15
+        Pair(Measure.Fahrenheit, Measure.Kelvin) -> (value + 459.67) * 5 / 9
+        Pair(Measure.Kelvin, Measure.Fahrenheit) -> value * 9 / 5 - 459.67
+        else -> value * measureFrom.getCoefficient() / measureTo.getCoefficient()
     }
 }
 
@@ -81,24 +111,17 @@ fun main(args: Array<String>) {
         }
 
         val value = strValue.toDouble()
-        val measureFrom = getMeasure(scanner.next().toLowerCase())
-
+        val measureFrom = getMeasure(scanner)
         scanner.next()
-        val measureTo = getMeasure(scanner.next().toLowerCase())
+        val measureTo = getMeasure(scanner)
 
-        if (measureTo.getGroup() != measureFrom.getGroup()) {
+        if (measureTo.getGroup() != measureFrom.getGroup() || measureTo == Measure.Unknown) {
             println("Conversion from ${measureFrom.getCorrectName(2.0)} " +
                     "to ${measureTo.getCorrectName(2.0)} is impossible")
             continue
         }
 
-        val coefficientFrom = measureFrom.getCoefficient()
-        val coefficientTo = measureTo.getCoefficient()
-
-        val result = value * coefficientFrom / coefficientTo
-
+        val result = calculate(value, measureFrom, measureTo)
         println("$value ${measureFrom.getCorrectName(value)} is $result ${measureTo.getCorrectName(result)}")
-
     }
-
 }
