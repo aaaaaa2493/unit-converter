@@ -89,10 +89,10 @@ fun calculate(value: Double, measureFrom: Measure, measureTo: Measure): Double {
     else when(Pair(measureFrom, measureTo)) {
         Pair(Measure.Fahrenheit, Measure.Celsius) -> (value - 32) * 5 / 9
         Pair(Measure.Celsius, Measure.Fahrenheit) -> value * 9 / 5 + 32
-        Pair(Measure.Celsius, Measure.Kelvin) -> value - 273.15
-        Pair(Measure.Kelvin, Measure.Celsius) -> value + 273.15
-        Pair(Measure.Fahrenheit, Measure.Kelvin) -> (value + 459.67) * 5 / 9
+        Pair(Measure.Celsius, Measure.Kelvin) -> value + 273.15
+        Pair(Measure.Kelvin, Measure.Celsius) -> value - 273.15
         Pair(Measure.Kelvin, Measure.Fahrenheit) -> value * 9 / 5 - 459.67
+        Pair(Measure.Fahrenheit, Measure.Kelvin) -> (value + 459.67) * 5 / 9
         else -> value * measureFrom.getCoefficient() / measureTo.getCoefficient()
     }
 }
