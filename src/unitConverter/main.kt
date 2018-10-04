@@ -20,20 +20,22 @@ fun getCorrectName(value: Double, measure: String): String {
             if (value == 1.0) "foot" else "feet"
         "inches", "inch", "in" ->
             if (value == 1.0) "inch" else "inches"
+        "kilograms", "kilogram", "kg" ->
+            if (value == 1.0) "kilogram" else "kilograms"
+        "grams", "gram", "g" ->
+            if (value == 1.0) "gram" else "grams"
+        "milligrams", "milligram", "mg" ->
+            if (value == 1.0) "milligram" else "milligrams"
+        "pounds", "pound", "lb" ->
+            if (value == 1.0) "pound" else "pounds"
+        "ounces", "ounce", "oz" ->
+            if (value == 1.0) "ounce" else "ounces"
         else -> "???"
     }
 }
 
-fun main(args: Array<String>) {
-
-    val scanner = Scanner(System.`in`)
-
-    print("Enter a number and a measure of length: ")
-
-    val value = scanner.nextDouble()
-    val measure = scanner.next().toLowerCase()
-
-    val result = value * when(measure) {
+fun getCoefficient(measure: String): Double {
+    return when(measure) {
         "meters", "meter", "m" -> 1.0
         "kilometers", "kilometer", "km" -> 1000.0
         "centimeters", "centimeter", "cm" -> 0.01
@@ -42,8 +44,55 @@ fun main(args: Array<String>) {
         "yards", "yard", "yd" -> 0.9144
         "feet", "foot", "ft" -> 0.3048
         "inches", "inch", "in" -> 0.0254
+        "kilograms", "kilogram", "kg" -> 1000.0
+        "grams", "gram", "g" -> 1.0
+        "milligrams", "milligram", "mg" -> 0.001
+        "pounds", "pound", "lb" -> 453.592
+        "ounces", "ounce", "oz" -> 28.3495
         else -> 0.0
     }
+}
 
-    println("$value ${getCorrectName(value, measure)} is $result ${getCorrectName(result, "m")}")
+fun getMeasureId(measure: String): Int {
+    val singular = getCorrectName(1.0, measure)
+    return when(singular) {
+        "meter", "kilometer", "centimeter", "millimeter", "mile", "yard", "foot", "inch" -> 1
+        "kilogram", "gram", "milligram", "pound", "ounce" -> 2
+        else -> -1
+    }
+}
+
+fun main(args: Array<String>) {
+
+    val scanner = Scanner(System.`in`)
+
+    while (true) {
+
+        print("Enter what you want co convert (or exit): ")
+
+        val strValue = scanner.next()
+        if (strValue == "exit") {
+            break
+        }
+
+        val value = strValue.toDouble()
+        val measureFrom = scanner.next().toLowerCase()
+
+        scanner.next()
+        val measureTo = scanner.next().toLowerCase()
+
+        if (getMeasureId(measureFrom) != getMeasureId(measureTo)) {
+            println("Conversion from ${getCorrectName(2.0, measureFrom)} " +
+                    "to ${getCorrectName(2.0, measureTo)} is impossible")
+            continue
+        }
+
+        val coefficientFrom = getCoefficient(measureFrom)
+        val coefficientTo = getCoefficient(measureTo)
+
+        val result = value * coefficientFrom / coefficientTo
+
+        println("$value ${getCorrectName(value, measureFrom)} is $result ${getCorrectName(result, measureTo)}")
+
+    }
 }
